@@ -7,6 +7,23 @@
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
     <meta name="theme-color" content="#101410">
+    <!-- share card (TikTok, LINE, Facebook, Messenger, Discord, X) -->
+    <meta name="description" content="เกมตกปลาสไตล์ชิงหลิว ดูทุ่น วัดเบ็ด สู้ปลา เล่นฟรีบนเว็บ ไม่มีโฆษณา ไม่ต้องสมัคร">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="ชิงหลิว บ่อตกปลา">
+    <meta property="og:locale" content="th_TH">
+    <meta property="og:title" content="ชิงหลิว บ่อตกปลา · เล่นฟรีบนเว็บ">
+    <meta property="og:description" content="ดูทุ่น วัดเบ็ด สู้ปลา สะสมปลา 20 ชนิด ไม่มีโฆษณา ไม่ต้องสมัคร เปิดลิงก์แล้วเล่นได้เลย">
+    <meta property="og:url" content="https://subbass5.github.io/chingliu-fishing/">
+    <meta property="og:image" content="https://subbass5.github.io/chingliu-fishing/TemplateData/og-cover.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="ทุ่นชิงหลิวสีสะท้อนแสงกลางบ่อตอนเช้า พร้อมชื่อเกม">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ชิงหลิว บ่อตกปลา · เล่นฟรีบนเว็บ">
+    <meta name="twitter:description" content="ดูทุ่น วัดเบ็ด สู้ปลา ไม่มีโฆษณา ไม่ต้องสมัคร">
+    <meta name="twitter:image" content="https://subbass5.github.io/chingliu-fishing/TemplateData/og-cover.jpg">
+    <link rel="canonical" href="https://subbass5.github.io/chingliu-fishing/">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="apple-touch-icon" href="TemplateData/icons/apple-touch-icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -177,6 +194,12 @@
         }
         document.addEventListener("pointerup", goLandscape, { once: false, passive: true });
         document.addEventListener("touchend", goLandscape, { once: false, passive: true });
+      } else if (/[?&]shot=1/.test(location.search)) {
+        // photo mode for the share cover: exact 1200x630 canvas, no footer
+        canvas.style.width = "1200px"; canvas.style.height = "630px";
+        document.querySelector("#unity-footer").style.display = "none";
+        config.devicePixelRatio = 1;
+        config.webglContextAttributes = { preserveDrawingBuffer: true };   // lets the cover be read back from the canvas
       } else {
         canvas.style.width = "960px";
         canvas.style.height = "600px";
