@@ -72,3 +72,18 @@ body { background: #101410 }
   .install-icon { width: 48px; height: 48px }
   .install-actions { margin-top: 10px }
 }
+
+/* ---- rotate screen: in-app browser escape + play-upright option ---- */
+body.rotate-skipped #rotate-hint { display: none !important }
+.rotate-inapp { display: flex; flex-direction: column; align-items: center; gap: 12px; max-width: 340px }
+.rotate-inapp[hidden], #open-chrome[hidden], #open-ios[hidden] { display: none }
+.rotate-note { font-size: 16px; color: #c9d4c6; line-height: 1.6 }
+.rotate-note.small { font-size: 15px }
+.rotate-note b { color: #fff }
+.rotate-btn {
+  font: inherit; font-size: 17px; min-height: 48px; padding: 10px 26px; border-radius: 12px; cursor: pointer;
+  background: transparent; color: #eef2ea; border: 1px solid #5a6b58; text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;
+}
+.rotate-btn.primary { background: #d9731f; border-color: #d9731f; color: #fff; font-weight: bold }
+.rotate-btn:focus-visible { outline: 3px solid #ffd15c; outline-offset: 2px }

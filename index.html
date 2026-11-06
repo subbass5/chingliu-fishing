@@ -51,7 +51,14 @@
     <!-- phones held upright: the game is landscape-only -->
     <div id="rotate-hint" aria-live="polite">
       <div class="rotate-phone"></div>
-      <div class="rotate-text">หมุนโทรศัพท์เป็นแนวนอน<br><small>เกมนี้เล่นในแนวนอนเท่านั้น</small></div>
+      <div class="rotate-text">หมุนโทรศัพท์เป็นแนวนอน<br><small id="rotate-sub">เกมนี้เล่นในแนวนอนเท่านั้น</small></div>
+      <!-- in-app browsers (Facebook, Messenger, LINE, TikTok...) never rotate, so offer a way out -->
+      <div id="rotate-inapp" class="rotate-inapp" hidden>
+        <div class="rotate-note">แอปนี้ไม่หมุนจอให้ เปิดในเบราว์เซอร์เพื่อเล่นเต็มจอแนวนอน</div>
+        <a id="open-chrome" class="rotate-btn primary" hidden>เปิดใน Chrome</a>
+        <div id="open-ios" class="rotate-note small" hidden>แตะ <b>⋯</b> หรือ <b>ไอคอนเข็มทิศ</b> แล้วเลือก <b>เปิดใน Safari</b></div>
+      </div>
+      <button id="rotate-skip" type="button" class="rotate-btn">เล่นแนวตั้งไปก่อน</button>
     </div>
 
     <!-- first visit on a phone: suggest adding the game to the home screen -->
@@ -73,6 +80,24 @@
     <script>
       var canvas = document.querySelector("#unity-canvas");
 
+      // ---------- rotate screen: way out of in-app browsers, and "play upright anyway" ----------
+      var IN_APP = /FBAN|FBAV|FB_IAB|Messenger|Instagram|Line\/|MicroMessenger|TikTok|musical_ly|Bytedance/i.test(navigator.userAgent);
+      (function () {
+        var ua = navigator.userAgent, android = /Android/i.test(ua), ios = /iPhone|iPad|iPod/i.test(ua);
+        if (IN_APP) {
+          document.getElementById("rotate-inapp").hidden = false;
+          document.getElementById("rotate-sub").textContent = "หรือเปิดในเบราว์เซอร์เพื่อเล่นเต็มจอ";
+          if (android) {
+            // Android intent: opens this same page in Chrome (falls back to the default browser if Chrome is missing)
+            var here = location.href.replace(/^https?:\/\//, "");
+            var a = document.getElementById("open-chrome");
+            a.href = "intent://" + here + "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + encodeURIComponent(location.href) + ";end";
+            a.hidden = false;
+          } else if (ios) document.getElementById("open-ios").hidden = false;
+        }
+        document.getElementById("rotate-skip").onclick = function () { document.body.classList.add("rotate-skipped"); };
+      })();
+
       // ---------- install popup (shown once, on phones, when not already installed) ----------
       (function () {
         var KEY = "chingliu-install-asked-v1";
@@ -92,7 +117,7 @@
           if (yes && !document.getElementById("install-popup").hidden) { yes.hidden = false; setText("android-ready"); }
         });
 
-        if (!phone || installed || asked) return;
+        if (!phone || installed || asked || inApp) return;   // in-app browsers get the rotate screen's "open in browser" instead
 
         var pop = document.getElementById("install-popup");
         var text = document.getElementById("install-text");
