@@ -38,3 +38,37 @@ body { background: #101410 }
 @media (orientation: portrait) {
   body.is-mobile #rotate-hint { display: flex }
 }
+
+/* ---- install popup (first visit on a phone) ---- */
+#install-popup {
+  position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.55); padding: 16px;
+  font-family: "Leelawadee UI", "Tahoma", "Noto Sans Thai", "Sarabun", sans-serif;
+}
+#install-popup[hidden] { display: none }
+.install-card {
+  display: flex; gap: 16px; align-items: flex-start; max-width: 520px; width: 100%;
+  max-height: calc(100% - 8px); overflow: auto;
+  background: #1b231d; color: #eef2ea; border: 1px solid #3a4a3d; border-radius: 16px;
+  padding: 18px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+.install-icon { width: 64px; height: 64px; border-radius: 14px; flex: none }
+.install-body { flex: 1; min-width: 0 }
+.install-title { font-size: 19px; font-weight: bold; margin-bottom: 6px }
+.install-text { font-size: 15px; line-height: 1.6; color: #c9d4c6 }
+.install-text b { color: #fff }
+.install-text .ico { display: inline-block; padding: 0 4px; border: 1px solid #6c7c6a; border-radius: 4px; font-size: 13px }
+.install-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap }
+.install-btn {
+  font: inherit; font-size: 16px; min-height: 44px; padding: 8px 18px; border-radius: 10px; cursor: pointer;
+  background: transparent; color: #eef2ea; border: 1px solid #5a6b58;
+}
+.install-btn.primary { background: #d9731f; border-color: #d9731f; color: #fff; font-weight: bold }
+.install-btn[hidden] { display: none }
+.install-btn:focus-visible { outline: 3px solid #ffd15c; outline-offset: 2px }
+/* short landscape phones: smaller icon so everything fits */
+@media (max-height: 420px) {
+  .install-card { padding: 14px; gap: 12px }
+  .install-icon { width: 48px; height: 48px }
+  .install-actions { margin-top: 10px }
+}

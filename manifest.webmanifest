@@ -1,0 +1,18 @@
+{
+  "name": "ชิงหลิว บ่อตกปลา",
+  "short_name": "ชิงหลิว",
+  "description": "เกมตกปลาชิงหลิว ดูทุ่น วัดเบ็ด สู้ปลา",
+  "lang": "th",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "landscape",
+  "background_color": "#101410",
+  "theme_color": "#101410",
+  "icons": [
+    { "src": "TemplateData/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "TemplateData/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "TemplateData/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -7,6 +7,12 @@
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
     <meta name="theme-color" content="#101410">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="TemplateData/icons/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ชิงหลิว">
   </head>
   <body>
     <div id="unity-container" class="unity-desktop">
@@ -31,8 +37,82 @@
       <div class="rotate-text">หมุนโทรศัพท์เป็นแนวนอน<br><small>เกมนี้เล่นในแนวนอนเท่านั้น</small></div>
     </div>
 
+    <!-- first visit on a phone: suggest adding the game to the home screen -->
+    <div id="install-popup" role="dialog" aria-modal="true" aria-labelledby="install-title" hidden>
+      <div class="install-card">
+        <img class="install-icon" src="TemplateData/icons/icon-192.png" alt="">
+        <div class="install-body">
+          <div id="install-title" class="install-title">เพิ่มเกมไว้ที่หน้าจอหลัก</div>
+          <div id="install-text" class="install-text"></div>
+          <div class="install-actions">
+            <button id="install-yes" type="button" class="install-btn primary" hidden>ติดตั้ง</button>
+            <button id="install-copy" type="button" class="install-btn primary" hidden>คัดลอกลิงก์</button>
+            <button id="install-later" type="button" class="install-btn">ไว้ทีหลัง</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
       var canvas = document.querySelector("#unity-canvas");
+
+      // ---------- install popup (shown once, on phones, when not already installed) ----------
+      (function () {
+        var KEY = "chingliu-install-asked-v1";
+        var ua = navigator.userAgent;
+        var phone = /iPhone|iPad|iPod|Android/i.test(ua);
+        var installed = window.matchMedia("(display-mode: fullscreen)").matches ||
+                        window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+        var inApp = /FBAN|FBAV|FB_IAB|Messenger|Instagram|Line\/|MicroMessenger|TikTok/i.test(ua);
+        var ios = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+        var asked = false;
+        try { asked = localStorage.getItem(KEY) === "1"; } catch (e) {}
+
+        var deferred = null;
+        window.addEventListener("beforeinstallprompt", function (e) {
+          e.preventDefault(); deferred = e;
+          var yes = document.getElementById("install-yes");
+          if (yes && !document.getElementById("install-popup").hidden) { yes.hidden = false; setText("android-ready"); }
+        });
+
+        if (!phone || installed || asked) return;
+
+        var pop = document.getElementById("install-popup");
+        var text = document.getElementById("install-text");
+        function setText(kind) {
+          text.innerHTML = {
+            "in-app": "เบราว์เซอร์ในแอปนี้เล่นเต็มจอไม่ได้<br>แตะ <b>⋯</b> มุมขวาบน แล้วเลือก <b>เปิดในเบราว์เซอร์</b> (Chrome / Safari) จากนั้นเพิ่มเกมไว้ที่หน้าจอหลัก",
+            "ios": "เล่นเต็มจอเหมือนแอป:<br>1. แตะปุ่ม <b>แชร์</b> <span class=\"ico\">⬆︎</span> ด้านล่าง<br>2. เลือก <b>เพิ่มไปยังหน้าจอโฮม</b>",
+            "android-ready": "ติดตั้งเป็นแอป เปิดมาเต็มจอและเป็นแนวนอนทันที ไม่มีแถบเบราว์เซอร์",
+            "android": "เล่นเต็มจอเหมือนแอป:<br>แตะเมนู <b>⋮</b> มุมขวาบน แล้วเลือก <b>เพิ่มลงในหน้าจอหลัก</b> หรือ <b>ติดตั้งแอป</b>"
+          }[kind];
+        }
+        function close() {
+          pop.hidden = true;
+          try { localStorage.setItem(KEY, "1"); } catch (e) {}
+        }
+
+        if (inApp) { setText("in-app"); document.getElementById("install-copy").hidden = false; }
+        else if (ios) setText("ios");
+        else if (deferred) { setText("android-ready"); document.getElementById("install-yes").hidden = false; }
+        else setText("android");
+
+        document.getElementById("install-later").onclick = close;
+        document.getElementById("install-yes").onclick = function () {
+          if (!deferred) return;
+          deferred.prompt();
+          deferred.userChoice.finally(function () { deferred = null; close(); });
+        };
+        document.getElementById("install-copy").onclick = function () {
+          var b = this, url = location.href.split("?")[0];
+          var done = function () { b.textContent = "คัดลอกแล้ว ✓"; };
+          if (navigator.clipboard) navigator.clipboard.writeText(url).then(done, function () { prompt("คัดลอกลิงก์นี้:", url); });
+          else prompt("คัดลอกลิงก์นี้:", url);
+        };
+
+        // let the page settle first so Chrome has a chance to offer its install event
+        setTimeout(function () { pop.hidden = false; document.getElementById("install-later").focus(); }, 1500);
+      })();
       var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
       function unityShowBanner(msg, type) {
@@ -82,8 +162,9 @@
         // (Browsers only allow the lock in fullscreen; iPhone Safari and in-app browsers refuse it,
         //  so they fall back to the rotate overlay, which is shown by CSS when the screen is upright.)
         var triedLock = false;
-        function goLandscape() {
+        function goLandscape(ev) {
           if (triedLock) return;
+          if (ev && ev.target && ev.target.closest && ev.target.closest("#install-popup")) return;   // popup taps don't count
           triedLock = true;
           var el = document.documentElement;
           var req = el.requestFullscreen || el.webkitRequestFullscreen;
