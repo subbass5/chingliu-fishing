@@ -138,11 +138,12 @@
       var u = safe(c[p[0]]);
       if (u) { var a = document.getElementById(p[1]); a.href = u; a.hidden = false; any = true; }
     });
-    if (any) {
-      document.getElementById("support").hidden = false;
-      if (location.hash === "#support") document.getElementById("support").scrollIntoView();
-    }
+    if (any) document.getElementById("support").hidden = false;
   }).catch(function () {});
+  // always open at the top: no automatic jump to the support section, even from links ending in #support
+  if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  window.scrollTo(0, 0);
 </script>
 </body>
 </html>
