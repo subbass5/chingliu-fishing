@@ -195,10 +195,43 @@
         document.addEventListener("pointerup", goLandscape, { once: false, passive: true });
         document.addEventListener("touchend", goLandscape, { once: false, passive: true });
       } else if (/[?&]shot=1/.test(location.search)) {
-        // photo mode for the share cover: exact 1200x630 canvas, no footer
-        canvas.style.width = "1200px"; canvas.style.height = "630px";
+        // photo mode for the share cover (1200x630) or, with &portrait=1, video recording (1080x1920); no footer
+        var portrait = /[?&]portrait=1/.test(location.search);
+        canvas.style.width = portrait ? "540px" : "1200px"; canvas.style.height = portrait ? "960px" : "630px";
         document.querySelector("#unity-footer").style.display = "none";
-        config.devicePixelRatio = 1;
+        config.devicePixelRatio = portrait ? 2 : 1;
+
+        // recording: copy every sound the game sends to the speakers into a stream we can record
+        var origConnect = AudioNode.prototype.connect;
+        AudioNode.prototype.connect = function (target) {
+          var r = origConnect.apply(this, arguments);
+          if (typeof AudioDestinationNode !== "undefined" && target instanceof AudioDestinationNode) {
+            var ctx = target.context;
+            if (!ctx.__rec) { ctx.__rec = ctx.createMediaStreamDestination(); window.__recAudio = ctx.__rec.stream; }
+            origConnect.call(this, ctx.__rec);
+          }
+          return r;
+        };
+        // __startRec() / await __stopRec(url): records canvas + game audio as WebM and POSTs it to url
+        window.__startRec = function () {
+          var s = canvas.captureStream(30);
+          if (window.__recAudio) window.__recAudio.getAudioTracks().forEach(function (t) { s.addTrack(t); });
+          var mime = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find(function (m) { return MediaRecorder.isTypeSupported(m); });
+          window.__chunks = [];
+          window.__rec = new MediaRecorder(s, { mimeType: mime, videoBitsPerSecond: 12000000, audioBitsPerSecond: 160000 });
+          window.__rec.ondataavailable = function (e) { if (e.data.size) window.__chunks.push(e.data); };
+          window.__rec.start(1000);
+          return mime + " audio:" + !!window.__recAudio;
+        };
+        window.__stopRec = function (url) {
+          return new Promise(function (done) {
+            window.__rec.onstop = function () {
+              var blob = new Blob(window.__chunks, { type: "video/webm" });
+              fetch(url, { method: "POST", body: blob }).then(function (r) { return r.text(); }).then(done, function (e) { done("upload failed: " + e); });
+            };
+            window.__rec.stop();
+          });
+        };
         config.webglContextAttributes = { preserveDrawingBuffer: true };   // lets the cover be read back from the canvas
       } else {
         canvas.style.width = "960px";

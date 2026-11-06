@@ -34,6 +34,20 @@
     b { color: var(--text) }
     a { color: #ffd15c }
     footer { color: var(--muted); font-size: 14px; margin-top: 24px }
+    section[hidden], [hidden] { display: none !important }
+    .support { border-color: #6b5530; background: #221f17 }
+    .support small { color: var(--muted); font-size: 14px }
+    .support-grid { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; margin-top: 14px }
+    .pp { margin: 0; text-align: center }
+    .pp img { width: 240px; height: 240px; max-width: 100%; background: #fff; padding: 10px; border-radius: 14px; display: block }
+    .pp figcaption { color: var(--muted); font-size: 14px; margin-top: 6px }
+    .sup-links { display: flex; flex-direction: column; gap: 10px; min-width: 0; flex: 1 1 220px }   /* wraps under the QR on phones */
+    .sup-btn { display: block; text-align: center; font-weight: 700; font-size: 17px; text-decoration: none;
+               padding: 12px 18px; border-radius: 12px; min-height: 44px }
+    .sup-btn.kofi { background: #29abe0; color: #fff }
+    .sup-btn.bmac { background: #ffdd00; color: #1b1b1b }
+    .sup-btn:focus-visible { outline: 3px solid #ffd15c; outline-offset: 3px }
+    .sup-note { font-size: 13px }
   </style>
 </head>
 <body>
@@ -64,9 +78,27 @@
     <ul>
       <li><b>ไม่ต้องสมัครสมาชิก</b> ไม่ต้องใส่อีเมลหรือเบอร์โทร</li>
       <li>ชื่อผู้ตก เลเวล แต้ม และสมุดปลา <b>เก็บไว้ในเบราว์เซอร์ของเครื่องคุณเท่านั้น</b> เกมไม่ได้ส่งข้อมูลเหล่านี้ไปที่ไหน</li>
-      <li><b>ไม่มีโฆษณา</b> และไม่มีการซื้อของด้วยเงินจริง</li>
+      <li><b>ไม่มีโฆษณา</b> และไม่มีการซื้อของด้วยเงินจริงในเกม</li>
       <li>ถ้าล้างข้อมูลเบราว์เซอร์หรือเปลี่ยนเครื่อง เซฟจะเริ่มใหม่</li>
     </ul>
+  </section>
+
+  <!-- filled from support.json; stays hidden until at least one option is set -->
+  <section id="support" class="support" hidden>
+    <h2>สนับสนุนผู้สร้าง ☕</h2>
+    <p>เกมนี้เล่นฟรีและจะฟรีต่อไป ถ้าชอบ เลี้ยงกาแฟผู้สร้างได้ตามสะดวก
+      <br><small>เป็นความสมัครใจล้วน ๆ ไม่ได้ปลดล็อกหรือเพิ่มอะไรในเกม</small></p>
+    <div class="support-grid">
+      <figure id="sup-pp" class="pp" hidden>
+        <img id="sup-pp-img" alt="QR พร้อมเพย์สำหรับสนับสนุนผู้สร้าง" width="240" height="240">
+        <figcaption>สแกนด้วยแอปธนาคาร · พร้อมเพย์<br><span id="sup-pp-name"></span></figcaption>
+      </figure>
+      <div class="sup-links">
+        <a id="sup-kofi" class="sup-btn kofi" target="_blank" rel="noopener" hidden>☕ Ko-fi</a>
+        <a id="sup-bmac" class="sup-btn bmac" target="_blank" rel="noopener" hidden>☕ Buy Me a Coffee</a>
+        <p class="sup-note">ตรวจชื่อบัญชีผู้รับในแอปธนาคารก่อนโอนทุกครั้ง</p>
+      </div>
+    </div>
   </section>
 
   <section>
@@ -80,5 +112,25 @@
 
   <footer>ชิงหลิว บ่อตกปลา · <a href="./">กลับไปเล่นเกม</a></footer>
 </main>
+<script>
+  // fills the support section from support.json; options left empty stay hidden
+  fetch("support.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : {}; }).then(function (c) {
+    var safe = function (u) { return /^https:\/\//.test(u || "") ? u : ""; };
+    var any = false;
+    if (c.promptpayQr) {
+      document.getElementById("sup-pp-img").src = c.promptpayQr;
+      document.getElementById("sup-pp-name").textContent = c.promptpayName || "";
+      document.getElementById("sup-pp").hidden = false; any = true;
+    }
+    [["kofi", "sup-kofi"], ["buyMeACoffee", "sup-bmac"]].forEach(function (p) {
+      var u = safe(c[p[0]]);
+      if (u) { var a = document.getElementById(p[1]); a.href = u; a.hidden = false; any = true; }
+    });
+    if (any) {
+      document.getElementById("support").hidden = false;
+      if (location.hash === "#support") document.getElementById("support").scrollIntoView();
+    }
+  }).catch(function () {});
+</script>
 </body>
 </html>

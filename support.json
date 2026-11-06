@@ -1,0 +1,7 @@
+{
+  "_comment": "Support options shown on about.html. Leave a value empty to hide that option. promptpayQr: path to a QR image in TemplateData/support/ (exported from your bank app, cropped to the code). kofi / buyMeACoffee: your full page URLs (https only).",
+  "promptpayQr": "TemplateData/support/promptpay.png",
+  "promptpayName": "กฤษณะ ร่องแก้ว",
+  "kofi": "",
+  "buyMeACoffee": ""
+}
